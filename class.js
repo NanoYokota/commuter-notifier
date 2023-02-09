@@ -208,18 +208,45 @@ class CommuteSheet extends SheetInfo {
     return this.fetchCurrentPattenIndex();
   }
 
-  fetchFlagOnIndexes() {
+  fetchPrevPatternIndex() {
+    const flags = this.getFlags();
+    for ( let i = 0; i < flags.length; i++ ) {
+      if ( flags[ i ][ 0 ] != 'on' ) {
+        continue;
+      }
+      if ( i - 1 < 0 ) {
+        this.flag.indexes.prev = this.getPatternsNum() - 1;
+      } else {
+        this.flag.indexes.prev = i - 1;
+      }
+      return this.flag.indexes.prev;
+    }
+  }
+
+  getPrevPatternIndex() {
+    const index = this.flag.indexes.prev;
+    if ( index > -1 ) {
+      return index;
+    }
+    return this.fetchPrevPatternIndex();
+  }
+
+  getCommuteMemberIndexes( index ) {
     const members = this.getMembers();
-    const index = this.getCurrentPattenIndex();
-    const currentPattern = members[ index + this.flag.rows.label ];
+    const pattern = members[ index + this.flag.rows.label ];
     let indexes = [];
-    for ( let i = 0; i < currentPattern.length; i++ ) {
-      if ( currentPattern[ i ] != "出社" ) {
+    for ( let i = 0; i < pattern.length; i++ ) {
+      if ( pattern[ i ] != "出社" ) {
         continue;
       }
       indexes.push( i );
     }
-    this.member.indexes.on = indexes;
+    return indexes;
+  }
+
+  fetchFlagOnIndexes() {
+    const index = this.getCurrentPattenIndex();
+    this.member.indexes.on = this.getCommuteMemberIndexes( index );
     return this.member.indexes.on;
   }
 
@@ -231,8 +258,21 @@ class CommuteSheet extends SheetInfo {
     return this.fetchFlagOnIndexes();
   }
 
-  fetchFlagOnMembers() {
-    const indexes = this.getFlagOnIndexes();
+  fetchPrevFlagIndexes() {
+    const index = this.getPrevPatternIndex();
+    this.member.indexes.prev = this.getCommuteMemberIndexes( index );
+    return this.member.indexes.prev;
+  }
+
+  getPrevFlagIndexes() {
+    const indexes = this.member.indexes.prev;
+    if ( indexes && indexes.length > 0 ) {
+      return indexes;
+    }
+    return this.fetchPrevFlagIndexes();
+  }
+
+  getCommuteMembers( indexes ) {
     const members = this.getMembers();
     const accountIds = members[ 0 ];
     const names = members[ 1 ];
@@ -241,7 +281,12 @@ class CommuteSheet extends SheetInfo {
       const index = indexes[ i ];
       values.push( { accountId: accountIds[ index ], name: names[ index ] } );
     }
-    this.member.values.on = values;
+    return values;
+  }
+
+  fetchFlagOnMembers() {
+    const indexes = this.getFlagOnIndexes();
+    this.member.values.on = this.getCommuteMembers( indexes );
     return this.member.values.on;
   }
 
@@ -252,6 +297,20 @@ class CommuteSheet extends SheetInfo {
       return members;
     }
     return this.fetchFlagOnMembers();
+  }
+
+  fetchPrevMembers() {
+    const indexes = this.getPrevFlagIndexes();
+    this.member.values.prev = this.getCommuteMembers( indexes );
+    return this.member.values.prev;
+  }
+
+  getPrevMembers() {
+    const members = this.member.values.prev;
+    if ( members && members.length > 0 ) {
+      return members;
+    }
+    return this.fetchPrevMembers();
   }
 
   switchFlag() {

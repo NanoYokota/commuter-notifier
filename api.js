@@ -2,6 +2,9 @@ function sendMessageCw( message = "", roomID = roomId_test ) {
   if ( !IS_RELEASED ) {
     roomID = roomId_test;
   }
+  if ( !IS_RELEASED ) {
+    message = "【テスト実行　※※無視してください※※】\n\n" + message;
+  }
   const url = `${ CW_ENDPOINT_URL }/rooms/${ roomID }/messages`;
   let options = {
     'method' : 'POST',
