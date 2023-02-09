@@ -255,10 +255,17 @@ class CommuteSheet extends SheetInfo {
   }
 
   switchFlag() {
+    const funcName = this.className + ".switchFlag()";
     const flags = this.getFlags();
     const index = this.getCurrentPattenIndex();
+    const lastIndex = this.getPatternsNum() - 1;
     flags[ index ][ 0 ] = "";
-    flags[ index + 1 ][ 0 ] = "on";
+    if ( index + 1 > lastIndex ) {
+      flags[ 0 ][ 0 ] = "on";
+    } else {
+      flags[ index + 1 ][ 0 ] = "on";
+    }
+    log( funcName, flags, { label: "flags", type: "debug" } );
     this.setFlags( flags );
     this.putFlags();
   }
